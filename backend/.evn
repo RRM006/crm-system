@@ -1,0 +1,6 @@
+SECRET_KEY=q=gd^yvxrubl=)56tn5kza9-m8x0ro(^@!6%=@^s+iw-ah%#o5
+DEBUG=True
+DATABASE_URL=postgresql://postgres:[YOUR_PASSWORD]@db.yzhfjnppbdxujeqyxxdm.supabase.co:5432/postgres
+SUPABASE_URL=https://yzhfjnppbdxujeqyxxdm.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6aGZqbnBwYmR4dWplcXl4eGRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTU3MzksImV4cCI6MjA3NzQ5MTczOX0.H4aAnGfmb1btMqlhmnfHzRL5J4oM_6yuDrpGd8R30aY
+ALLOWED_HOSTS=localhost,127.0.0.1
