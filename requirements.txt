@@ -1,0 +1,2 @@
+pip install django djangorestframework django-cors-headers psycopg2-binary python-decouple djangorestframework-simplejwt Pillow requests python-dotenv
+

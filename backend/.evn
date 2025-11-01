@@ -1,6 +1,20 @@
+# Django Settings
 SECRET_KEY=q=gd^yvxrubl=)56tn5kza9-m8x0ro(^@!6%=@^s+iw-ah%#o5
 DEBUG=True
-DATABASE_URL=postgresql://postgres:[YOUR_PASSWORD]@db.yzhfjnppbdxujeqyxxdm.supabase.co:5432/postgres
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database (Get from your database-credentials.txt)
+DATABASE_URL=postgresql://postgres:xRM2E#veDK.pD2t@db.yzhfjnppbdxujeqyxxdm.supabase.co:5432/postgres
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=xRM2E#veDK.pD2t
+DB_HOST=db.yzhfjnppbdxujeqyxxdm.supabase.co
+DB_PORT=5432
+
+# Supabase
 SUPABASE_URL=https://yzhfjnppbdxujeqyxxdm.supabase.co
 SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6aGZqbnBwYmR4dWplcXl4eGRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTU3MzksImV4cCI6MjA3NzQ5MTczOX0.H4aAnGfmb1btMqlhmnfHzRL5J4oM_6yuDrpGd8R30aY
-ALLOWED_HOSTS=localhost,127.0.0.1
+
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,localhost,127.0.0.1
