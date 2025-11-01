@@ -70,7 +70,7 @@ To measure success, the system will track improvements in performance and adopti
 * System latency should stay below 2 seconds per request.  
 * Feature updates must not affect backward compatibility.
 
-## **Success Metrics**
+### **Success Metrics**
 
 *  Response time by 40%
 
@@ -78,7 +78,7 @@ To measure success, the system will track improvements in performance and adopti
 
 * 80% user adoption in 1 month.
 
-* \+30% customer satisfaction
+* 30% customer satisfaction.
 
 ## **Target Audience (Users)**
 
