@@ -1,0 +1,501 @@
+Perfect 👍 — let’s build your **complete multitenant CRM database architecture** — fully expanded with all previously discussed and implied features (customers, vendors, communications, orders, pipeline, notes, etc.), now **tenant-aware** and **user-role flexible**.
+
+Below is the **comprehensive conceptual schema** — table names, all key attributes, relationships, and keys — formatted for easy implementation in PostgreSQL or ORM tools later.
+
+---
+
+## 🏢 **1. Multitenancy & User Management**
+
+### **Table: `tenants`**
+
+**Purpose:** Represents an organization or company that uses your CRM.
+
+**Columns:**
+
+* `tenant_id` (PK, UUID)
+* `name`
+* `domain`
+* `plan` (e.g., Free, Pro, Enterprise)
+* `created_at`
+* `updated_at`
+
+**Relationships:**
+
+* One `tenant` → Many users via `user_memberships`
+* One `tenant` → Owns data across all CRM entities
+
+---
+
+### **Table: `users`**
+
+**Purpose:** Global user accounts shared across tenants.
+
+**Columns:**
+
+* `user_id` (PK, UUID)
+* `email` (unique)
+* `password_hash`
+* `full_name`
+* `phone`
+* `profile_picture`
+* `language`
+* `timezone`
+* `is_superadmin` (system-wide)
+* `created_at`
+* `last_login`
+
+**Relationships:**
+
+* One `user` → Many `user_memberships`
+* Can own or modify CRM data (via memberships)
+
+---
+
+### **Table: `roles`**
+
+**Purpose:** Defines roles for users per tenant.
+
+**Columns:**
+
+* `role_id` (PK)
+* `name` (Admin, Manager, SalesRep, Support, Vendor, Customer)
+* `description`
+
+---
+
+### **Table: `user_memberships`**
+
+**Purpose:** Links users to tenants with specific roles and attributes.
+
+**Columns:**
+
+* `membership_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `user_id` (FK → users)
+* `role_id` (FK → roles)
+* `is_vendor` (boolean)
+* `is_customer` (boolean)
+* `status` (active, pending, suspended)
+* `metadata` (JSON)
+* `created_at`
+
+**Relationships:**
+
+* Many-to-one → `tenants`
+* Many-to-one → `users`
+* One-to-one → `roles`
+
+---
+
+## 🧍‍♂️ **2. Parties & Contacts**
+
+### **Table: `parties`**
+
+**Purpose:** Abstract entity for both customers and vendors.
+
+**Columns:**
+
+* `party_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `type` (Organization, Individual)
+* `name`
+* `industry`
+* `is_vendor` (boolean)
+* `is_customer` (boolean)
+* `website`
+* `tax_number`
+* `rating` (A–F or 1–5 scale)
+* `source` (referral, web form, import, etc.)
+* `created_at`
+* `updated_at`
+* `meta` (JSON)
+
+**Relationships:**
+
+* One-to-many → `contacts`, `opportunities`, `orders`, `communications`
+
+---
+
+### **Table: `addresses`**
+
+**Purpose:** Standardized address storage for parties or contacts.
+
+**Columns:**
+
+* `address_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `party_id` (FK → parties, nullable)
+* `contact_id` (FK → contacts, nullable)
+* `address_type` (billing, shipping, office, home)
+* `street`
+* `city`
+* `state`
+* `postal_code`
+* `country`
+* `is_primary`
+* `created_at`
+
+---
+
+### **Table: `contacts`**
+
+**Purpose:** Individual people within a party (customers, vendors, leads).
+
+**Columns:**
+
+* `contact_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `party_id` (FK → parties)
+* `first_name`
+* `last_name`
+* `email`
+* `phone`
+* `job_title`
+* `department`
+* `linkedin_url`
+* `is_primary`
+* `created_at`
+
+---
+
+## 💼 **3. Products & Orders**
+
+### **Table: `products`**
+
+**Purpose:** Product or service catalog per tenant.
+
+**Columns:**
+
+* `product_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `name`
+* `sku`
+* `description`
+* `category`
+* `price`
+* `currency`
+* `tax_rate`
+* `stock_quantity`
+* `unit_of_measure`
+* `is_active`
+* `created_at`
+* `updated_at`
+
+---
+
+### **Table: `orders`**
+
+**Purpose:** Tracks sales/purchase orders.
+
+**Columns:**
+
+* `order_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `party_id` (FK → parties)
+* `contact_id` (FK → contacts)
+* `order_number`
+* `order_date`
+* `due_date`
+* `status` (Draft, Confirmed, Shipped, Completed, Cancelled)
+* `payment_status` (Pending, Paid, Partial)
+* `shipping_address_id` (FK → addresses)
+* `billing_address_id` (FK → addresses)
+* `total_amount`
+* `currency`
+* `notes`
+* `created_by` (FK → users)
+* `created_at`
+
+---
+
+### **Table: `order_items`**
+
+**Purpose:** Line items within an order.
+
+**Columns:**
+
+* `order_item_id` (PK, UUID)
+* `order_id` (FK → orders)
+* `product_id` (FK → products)
+* `quantity`
+* `unit_price`
+* `discount`
+* `subtotal`
+* `tax_amount`
+* `total_price`
+
+---
+
+## 💬 **4. Communications**
+
+### **Table: `communication_channels`**
+
+**Purpose:** Lookup table for different channel types.
+
+**Columns:**
+
+* `channel_id` (PK)
+* `name` (Phone, Email, Telegram, SMS, WhatsApp)
+* `is_active`
+
+---
+
+### **Table: `phone_calls`**
+
+**Purpose:** Logs all customer/vendor phone calls.
+
+**Columns:**
+
+* `call_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `party_id` (FK → parties)
+* `contact_id` (FK → contacts)
+* `user_id` (FK → users)
+* `direction` (Inbound/Outbound)
+* `start_time`
+* `end_time`
+* `duration_seconds`
+* `recording_url`
+* `transcription_status`
+* `created_at`
+
+---
+
+### **Table: `call_transcripts`**
+
+**Purpose:** Stores transcribed text from phone calls.
+
+**Columns:**
+
+* `transcript_id` (PK, UUID)
+* `call_id` (FK → phone_calls)
+* `tenant_id` (FK → tenants)
+* `transcript_text`
+* `language`
+* `confidence`
+* `summary`
+* `keywords`
+* `sentiment_score`
+* `created_at`
+
+---
+
+### **Table: `emails`**
+
+**Purpose:** Email logging and message tracking.
+
+**Columns:**
+
+* `email_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `party_id` (FK → parties)
+* `contact_id` (FK → contacts)
+* `user_id` (FK → users)
+* `direction` (Inbound/Outbound)
+* `subject`
+* `body`
+* `message_id`
+* `status` (Sent, Received, Failed, Draft)
+* `attachments` (JSON)
+* `sent_at`
+* `created_at`
+
+---
+
+### **Table: `telegram_messages`**
+
+**Purpose:** Stores Telegram messages linked to customers/vendors.
+
+**Columns:**
+
+* `message_id` (PK, BIGINT)
+* `tenant_id` (FK → tenants)
+* `party_id` (FK → parties)
+* `contact_id` (FK → contacts)
+* `user_id` (FK → users)
+* `direction` (Inbound/Outbound)
+* `chat_id`
+* `message_text`
+* `message_type` (Text, File, Voice, Image)
+* `attachment_url`
+* `sent_at`
+* `created_at`
+
+---
+
+## 📊 **5. Sales Pipeline & Opportunities**
+
+### **Table: `pipelines`**
+
+**Purpose:** Defines sales pipelines per tenant.
+
+**Columns:**
+
+* `pipeline_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `name`
+* `description`
+* `is_default`
+* `created_at`
+
+---
+
+### **Table: `pipeline_stages`**
+
+**Purpose:** Defines ordered stages in a pipeline.
+
+**Columns:**
+
+* `stage_id` (PK, UUID)
+* `pipeline_id` (FK → pipelines)
+* `name`
+* `position`
+* `probability`
+* `is_final`
+* `created_at`
+
+---
+
+### **Table: `opportunities`**
+
+**Purpose:** Tracks deals or potential sales.
+
+**Columns:**
+
+* `opportunity_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `pipeline_id` (FK → pipelines)
+* `stage_id` (FK → pipeline_stages)
+* `party_id` (FK → parties)
+* `contact_id` (FK → contacts)
+* `title`
+* `value`
+* `currency`
+* `expected_close_date`
+* `stage_entered_at`
+* `source` (web, referral, import)
+* `priority` (Low, Medium, High)
+* `probability` (auto from stage or manual)
+* `assigned_to` (FK → users)
+* `created_by` (FK → users)
+* `created_at`
+* `updated_at`
+
+---
+
+### **Table: `opportunity_stage_history`**
+
+**Purpose:** Logs all stage transitions automatically.
+
+**Columns:**
+
+* `history_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `opportunity_id` (FK → opportunities)
+* `old_stage_id` (FK → pipeline_stages)
+* `new_stage_id` (FK → pipeline_stages)
+* `changed_by` (FK → users)
+* `change_reason`
+* `changed_at`
+* `duration_in_stage`
+
+---
+
+## 🧾 **6. Collaboration & Internal Tools**
+
+### **Table: `notes`**
+
+**Purpose:** Internal notes related to entities.
+
+**Columns:**
+
+* `note_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `related_type` (Opportunity, Order, Party, Product)
+* `related_id` (UUID)
+* `content`
+* `created_by` (FK → users)
+* `created_at`
+
+---
+
+### **Table: `attachments`**
+
+**Purpose:** Files uploaded and linked to entities.
+
+**Columns:**
+
+* `attachment_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `related_type`
+* `related_id`
+* `filename`
+* `url`
+* `mime_type`
+* `uploaded_by` (FK → users)
+* `uploaded_at`
+
+---
+
+### **Table: `activity_logs`**
+
+**Purpose:** System log for auditing user actions.
+
+**Columns:**
+
+* `activity_id` (PK, UUID)
+* `tenant_id` (FK → tenants)
+* `user_id` (FK → users)
+* `action` (Created Opportunity, Sent Email, Logged Call, etc.)
+* `related_type`
+* `related_id`
+* `meta` (JSON)
+* `created_at`
+
+---
+
+## 🔐 **7. Keys & Relationships Summary**
+
+### **Primary Keys:**
+
+All tables have primary keys:
+
+* UUID-based except Telegram (BIGINT).
+
+### **Foreign Key Relationships Overview:**
+
+* `user_memberships.tenant_id` → `tenants.tenant_id`
+* `user_memberships.user_id` → `users.user_id`
+* `user_memberships.role_id` → `roles.role_id`
+* `contacts.party_id` → `parties.party_id`
+* `parties.tenant_id` → `tenants.tenant_id`
+* `addresses.party_id/contact_id` → optional
+* `orders.party_id` → `parties.party_id`
+* `orders.created_by` → `users.user_id`
+* `order_items.order_id` → `orders.order_id`
+* `products.tenant_id` → `tenants.tenant_id`
+* `opportunities.pipeline_id` → `pipelines.pipeline_id`
+* `opportunities.stage_id` → `pipeline_stages.stage_id`
+* `opportunities.party_id` → `parties.party_id`
+* `opportunity_stage_history.opportunity_id` → `opportunities.opportunity_id`
+* `phone_calls.party_id` → `parties.party_id`
+* `call_transcripts.call_id` → `phone_calls.call_id`
+* `emails.party_id` → `parties.party_id`
+* `telegram_messages.party_id` → `parties.party_id`
+* `attachments.related_id` → polymorphic references (UUIDs)
+* `activity_logs.user_id` → `users.user_id`
+
+### **Tenant Isolation:**
+
+All entity tables contain `tenant_id` and are protected with RLS.
+
+---
+
+✅ **Result:**
+You now have a **fully multitenant CRM database design** that:
+
+* Allows a single `user` to act as both **vendor and customer** in different contexts
+* Tracks **calls, emails, Telegram chats, and orders**
+* Maintains **pipeline and stage analytics**
+* Supports **shared tenants with per-user roles**
+* Includes **addresses, products, notes, attachments, and audit logs**
